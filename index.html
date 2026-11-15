@@ -130,6 +130,17 @@ input[aria-invalid=true] { border-color: var(--danger); }
   width: 100%; height: 46px; margin-top: 6px; border: 0; background: none; color: var(--ink-soft);
   font: 500 15px Figtree, system-ui, sans-serif; cursor: pointer;
 }
+.mailnote { margin: -8px 0 20px !important; font-size: 14px; color: var(--ink-soft); }
+@media (max-width: 360px) {
+  .wrap { padding: 12px 10px 28px; }
+  .pass { padding: 24px 18px 22px; }
+  .panel { padding: 8px 18px 24px; }
+  .tear::before { left: 18px; right: 18px; }
+  .sheet { padding-left: 18px; padding-right: 18px; }
+}
+@media (min-width: 768px) {
+  .wrap { padding-top: 56px; }
+}
 .note { margin-top: 14px !important; padding: 10px 12px; border-radius: 10px; background: var(--accent-soft); color: var(--ink); font-size: 14px; text-align: left; }
 </style>
 </head>
@@ -196,6 +207,7 @@ input[aria-invalid=true] { border-color: var(--danger); }
     </div>
     <h2 id="popup-title">You’re registered</h2>
     <p class="body">Join our WhatsApp community for event updates, photos and future invites.</p>
+    <p class="mailnote" id="popup-mail" hidden>We’ve also emailed this link to you.</p>
     <a class="join" id="join-btn" href="#">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.7-5.1A8.5 8.5 0 1 1 21 11.5z"/></svg>
       Join WhatsApp community
@@ -395,12 +407,13 @@ function logClick(choice) {
   } catch (e) {}
 }
 
-function showPopup(name, state) {
+function showPopup(name, state, emailed) {
   const first = name.split(' ')[0];
   $('popup-title').textContent = state === 'already'
     ? `You’re already registered, ${first}`
     : `You’re registered, ${first}`;
   $('popup-note').hidden = state !== 'backup';
+  $('popup-mail').hidden = !emailed;
   $('popup').hidden = false;
   document.body.style.overflow = 'hidden';
   $('join-btn').focus();
@@ -452,7 +465,7 @@ form.addEventListener('submit', async e => {
 
   if (r.ok) {
     canLogClicks = true;
-    showPopup(data.name, r.duplicate ? 'already' : 'ok');
+    showPopup(data.name, r.duplicate ? 'already' : 'ok', r.emailed === true);
   } else if (r.error === 'invalid') {
     if (['name', 'email', 'phone', 'consent'].includes(r.field)) {
       setFieldError(r.field, MESSAGES[r.field]);
